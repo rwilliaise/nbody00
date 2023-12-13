@@ -11,6 +11,7 @@
 
 #define EARTH_MASS 5.972e24
 
+#define MOON_PERIOD 2358720.0
 #define MOON_DIST 3.844e8
 #define MOON_MASS 7.348e22
 
@@ -96,7 +97,7 @@ void body_update(body_t *B, world_t *W) {
     }
 
     vec3d r_pos = vec_muls(B->pos, R_SCALE);
-    vec3d r_end_pos = vec_add(r_pos, vec_muls(F_net, R_SCALE * 50 * (1 / B->mass)));
+    vec3d r_end_pos = vec_add(r_pos, vec_muls(F_net, R_SCALE * 10000 * (1 / B->mass)));
     DrawLine3D(vec_convert(r_pos), vec_convert(r_end_pos), B->color);
 
     veci_add(&B->vel, vec_muls(F_net, W->delta * (1.0 / B->mass)));
@@ -142,7 +143,9 @@ int main(int argc, char *argv[]) {
     double T = (2 * M_PI) / w;
 
     printf("calculated moon period: %f s\n", T);
+    printf("expected moon period: %f s (%%error: %f%%) \n", MOON_PERIOD, 100 * (T - MOON_PERIOD) / MOON_PERIOD);
     printf("calculated moon velocity: %f m/s\n", v);
+    printf("expected moon velocity: %f m/s\n", ((2 * M_PI) / (MOON_PERIOD)) * MOON_DIST);
 
     // moon
     memcpy(
@@ -152,23 +155,23 @@ int main(int argc, char *argv[]) {
             .mass = MOON_MASS,
             .pos = (vec3d) { 3.844e8, 0, 0 },
             .vel = (vec3d) { 0, 0, v },
-            .color = GRAY,
+            .color = WHITE,
         },
         sizeof(body_t)
     );
 
     while (!WindowShouldClose()) {
-        world.delta = GetFrameTime();
+        world.delta = GetFrameTime() * 10000;
 
         BeginDrawing();
-            ClearBackground(WHITE);
+            ClearBackground(BLACK);
 
             BeginMode3D((Camera3D) {
-                .position = (Vector3) { 0, 150, 1 },
+                .position = (Vector3) { 0, 100, 1 },
                 // .target = vec_convert(vec_muls(world.bodies[1].pos, R_SCALE)),
                 .target = (Vector3) { 0, 0, 0 },
                 .up = (Vector3) { 0, 1, 0 },
-                .fovy = 120,
+                .fovy = 70,
                 .projection = CAMERA_ORTHOGRAPHIC,
             });
 
