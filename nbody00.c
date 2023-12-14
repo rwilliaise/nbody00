@@ -79,7 +79,7 @@ Vector3 vec_convert(vec3d A) {
 
 void body_render(body_t *B) {
     vec3d r_pos = vec_muls(B->pos, R_SCALE);
-    vec3d r_end_pos = vec_add(r_pos, vec_muls(B->vel, R_SCALE));
+    vec3d r_end_pos = vec_add(r_pos, vec_muls(B->vel, R_SCALE * 1000));
     DrawLine3D(vec_convert(r_pos), vec_convert(r_end_pos), B->color);
     DrawSphere(vec_convert(r_pos), B->radius * R_SCALE, B->color);
 }
@@ -95,10 +95,6 @@ void body_update(body_t *B, world_t *W) {
         vec3d F = vec_muls(vec_divs(diff, dist), G_CONST * ((other->mass * B->mass) / (dist * dist)));
         veci_add(&F_net, F);
     }
-
-    vec3d r_pos = vec_muls(B->pos, R_SCALE);
-    vec3d r_end_pos = vec_add(r_pos, vec_muls(F_net, R_SCALE * 10000 * (1 / B->mass)));
-    DrawLine3D(vec_convert(r_pos), vec_convert(r_end_pos), B->color);
 
     veci_add(&B->vel, vec_muls(F_net, W->delta * (1.0 / B->mass)));
     veci_add(&B->pos, vec_muls(B->vel, W->delta));
@@ -160,22 +156,32 @@ int main(int argc, char *argv[]) {
         sizeof(body_t)
     );
 
+    int simulation_on = 0;
+    float speed = 1.0e5;
+
     while (!WindowShouldClose()) {
-        world.delta = GetFrameTime() * 10000;
+        world.delta = GetFrameTime() * speed;
 
         BeginDrawing();
             ClearBackground(BLACK);
+
+            if (GuiButton((Rectangle) { 5, 5, 50, 25 }, simulation_on ? "pause" : "unpause")) {
+                simulation_on = !simulation_on;
+            }
+
+            GuiSlider((Rectangle) { 125, 5, 100, 25 }, TextFormat("%0.1f", speed), NULL, &speed, 1.0e4, 1.0e6);
 
             BeginMode3D((Camera3D) {
                 .position = (Vector3) { 0, 100, 1 },
                 // .target = vec_convert(vec_muls(world.bodies[1].pos, R_SCALE)),
                 .target = (Vector3) { 0, 0, 0 },
                 .up = (Vector3) { 0, 1, 0 },
-                .fovy = 70,
+                .fovy = 90,
                 .projection = CAMERA_ORTHOGRAPHIC,
             });
 
-            world_update(&world);
+            if (simulation_on)
+                world_update(&world);
             world_render(&world);
 
             EndMode3D();
