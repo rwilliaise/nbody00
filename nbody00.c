@@ -113,7 +113,7 @@ void world_update(world_t *W) {
 }
 
 int main(int argc, char *argv[]) {
-    InitWindow(1280, 720, "nbody00");
+    InitWindow(1024, 1023, "nbody00");
 
     world_t world;
     world.body_count = 2;
@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
             GuiSlider((Rectangle) { 125, 5, 100, 25 }, TextFormat("%0.1f", speed), NULL, &speed, 1.0e4, 1.0e6);
 
             BeginMode3D((Camera3D) {
-                .position = (Vector3) { 0, 100, 1 },
+                .position = (Vector3) { 0, 20, 1 },
                 // .target = vec_convert(vec_muls(world.bodies[1].pos, R_SCALE)),
                 .target = (Vector3) { 0, 0, 0 },
                 .up = (Vector3) { 0, 1, 0 },
